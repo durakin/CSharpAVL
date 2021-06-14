@@ -1,13 +1,13 @@
 ﻿using System;
 
-namespace CSharpAVL
+namespace CSharpAVL.App
 {
     class Program
     {
         static void Main(string[] args)
         {
             BinarySearchTree<String> binarySearchTree = new();
-            
+
             Console.WriteLine($"{binarySearchTree.Add("10")} 10");
             Console.WriteLine($"{binarySearchTree.Add("10")} 10");
             Console.WriteLine($"{binarySearchTree.Add("10")} 10");
@@ -80,7 +80,7 @@ namespace CSharpAVL
             laundry.AddOrder("Sergey", "Sneakers");
             Console.WriteLine("List as tree");
             laundry.PrintAsTree();
-            
+
             Console.WriteLine($"Found by name Bojack {laundry.OrderToStringByName("Bojack")}");
             Console.WriteLine("Delete Vasiliy");
             laundry.DeleteOrderByName("Vasiliy");
