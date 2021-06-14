@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace CSharpAVL
 {
     
-    public class BinarySearchTree<T> : IEnumerable<T>, ICollection<T> where T : IComparable
+    public class BinarySearchTree<T> where T : IComparable
     {
         private Node<T> _root;
         public int Count { get; private set; }
@@ -69,11 +69,11 @@ namespace CSharpAVL
             return result;
         }
 
-        void ICollection<T>.Add(T item)
-        {
-            if (item == null) return;
-            _root = AddIfNotPresent(_root, item, out _);
-        }
+        // void ICollection<T>.Add(T item)
+        // {
+        //     if (item == null) return;
+        //     _root = AddIfNotPresent(_root, item, out _);
+        // }
 
         public void Clear()
         {
@@ -322,12 +322,12 @@ namespace CSharpAVL
 
         
 
-        /*
+
         public void PrintTree()
         {
             TreeDrawer<T>.PrintNode(_root, "");
         }
-        */
+
         /*
          public bool RemoveByValue(object value)
         {
