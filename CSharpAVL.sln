@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharpAVL.App", "CSharpAVL.
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSharpAVL", "FSharpAVL\FSharpAVL.fsproj", "{3D74E7EC-958B-4490-ACC4-44B1226C698C}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSharpAVL.App", "FSharpAVL.App\FSharpAVL.App.fsproj", "{F1CA97D1-6D56-427C-BDE6-344D02ECF4B2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{3D74E7EC-958B-4490-ACC4-44B1226C698C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3D74E7EC-958B-4490-ACC4-44B1226C698C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3D74E7EC-958B-4490-ACC4-44B1226C698C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1CA97D1-6D56-427C-BDE6-344D02ECF4B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1CA97D1-6D56-427C-BDE6-344D02ECF4B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1CA97D1-6D56-427C-BDE6-344D02ECF4B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1CA97D1-6D56-427C-BDE6-344D02ECF4B2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

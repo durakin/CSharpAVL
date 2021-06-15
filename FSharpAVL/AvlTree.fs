@@ -63,6 +63,19 @@ let replace fn tree =
 
     rebuild' tree
 
+let replace' fn tree =
+    let rec rebuild' tree =
+        fn tree
+        |> Option.defaultValue (
+            match tree with
+            | Nil a -> Nil a
+            | Left (a, l) -> Left(a, rebuild' l)
+            | Right (a, r) -> Right(a, rebuild' r)
+            | Both (a, l, r) -> Both(a, rebuild' l, rebuild' r)
+        )
+
+    rebuild' tree
+
 let rotateLeft z x =
     let t1 = leftChild x
     let t23 = leftChild z
@@ -122,22 +135,22 @@ let rotateTree fn (x, z) parent =
 let rec insertUnbalanced tree newItem =
     match tree with
     | Nil item ->
-        match compare item newItem with
-        | Less -> Left(newItem, tree)
+        match compare newItem item with
+        | Less -> Left(item, ofItem newItem)
         | Equal -> tree
-        | Greater -> Right(newItem, tree)
+        | Greater -> Right(item, ofItem newItem)
     | Left (item, l) ->
-        match compare item newItem with
+        match compare newItem item with
         | Less -> Left(item, insertUnbalanced l newItem)
         | Equal -> tree
         | Greater -> Both(item, l, ofItem newItem)
     | Right (item, r) ->
-        match compare item newItem with
+        match compare newItem item with
         | Less -> Both(item, ofItem newItem, r)
         | Equal -> tree
         | Greater -> Left(item, insertUnbalanced r newItem)
     | Both (item, l, r) ->
-        match compare item newItem with
+        match compare newItem item with
         | Less -> Both(item, insertUnbalanced l newItem, r)
         | Equal -> tree
         | Greater -> Both(item, l, insertUnbalanced r newItem)
