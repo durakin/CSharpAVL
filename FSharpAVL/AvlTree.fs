@@ -63,7 +63,7 @@ let replace fn tree =
 
     rebuild' tree
 
-let rotateLeft (x, z) parent =
+let rotateLeft z x =
     let t1 = leftChild x
     let t23 = leftChild z
     let t4 = rightChild z
@@ -71,9 +71,9 @@ let rotateLeft (x, z) parent =
     let newX = ofOptions (rootItem x) (t1, t23)
     let newZ = ofOptions (rootItem z) (Some newX, t4)
 
-    Right(rootItem parent, newZ)
+    newZ
 
-let rotateRight (x, z) parent =
+let rotateRight z x =
     let t4 = leftChild z
     let t23 = rightChild z
     let t1 = rightChild x
@@ -81,7 +81,35 @@ let rotateRight (x, z) parent =
     let newX = ofOptions (rootItem x) (t23, t1)
     let newZ = ofOptions (rootItem z) (t4, Some newX)
 
-    Left(rootItem parent, newZ)
+    newZ
+
+let rotateRightLeft (y, z) x =
+    let t1 = leftChild x
+    let t2 = leftChild y
+    let t3 = rightChild y
+    let t4 = rightChild z
+
+    let newX = ofOptions (rootItem x) (t1, t2)
+    let newZ = ofOptions (rootItem z) (t3, t4)
+
+    let newY =
+        ofOptions (rootItem y) (Some newX, Some newZ)
+
+    newY
+
+let rotateLeftRight (y, z) x =
+    let t4 = leftChild z
+    let t3 = leftChild y
+    let t2 = rightChild y
+    let t1 = rightChild x
+
+    let newZ = ofOptions (rootItem z) (t4, t3)
+    let newX = ofOptions (rootItem x) (t2, t1)
+
+    let newY =
+        ofOptions (rootItem y) (Some newZ, Some newX)
+
+    newY
 
 let rotateTree fn (x, z) parent =
     replace
@@ -91,13 +119,25 @@ let rotateTree fn (x, z) parent =
             else
                 None)
 
-let insertUnbalanced tree newElement =
+let rec insertUnbalanced tree newItem =
     match tree with
-    | Nil element ->
-        match compare element newElement with
-        | Less -> Left(newElement, tree)
+    | Nil item ->
+        match compare item newItem with
+        | Less -> Left(newItem, tree)
         | Equal -> tree
-        | Greater -> Right(newElement, tree)
-    | Left _ -> unimplemented ""
-    | Right _ -> unimplemented ""
-    | Both _ -> unimplemented ""
+        | Greater -> Right(newItem, tree)
+    | Left (item, l) ->
+        match compare item newItem with
+        | Less -> Left(item, insertUnbalanced l newItem)
+        | Equal -> tree
+        | Greater -> Both(item, l, ofItem newItem)
+    | Right (item, r) ->
+        match compare item newItem with
+        | Less -> Both(item, ofItem newItem, r)
+        | Equal -> tree
+        | Greater -> Left(item, insertUnbalanced r newItem)
+    | Both (item, l, r) ->
+        match compare item newItem with
+        | Less -> Both(item, insertUnbalanced l newItem, r)
+        | Equal -> tree
+        | Greater -> Both(item, l, insertUnbalanced r newItem)
