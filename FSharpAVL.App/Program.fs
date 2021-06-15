@@ -1,12 +1,12 @@
 ﻿open FSharpAVL.AvlTree
 
-let trees ints =
-    let mutable tree = ofItem (ints |> Seq.head)
+let trees numbers =
+    let mutable tree = ofItem (numbers |> Seq.head)
 
     seq {
         yield tree
 
-        for i in ints do
+        for i in numbers do
             tree <- insertUnbalanced tree i
             yield tree
     }
@@ -16,7 +16,9 @@ let main _ =
     let inputs =
         seq {
             while true do
-                int ^ System.Console.ReadLine()
+                match System.Int32.TryParse(System.Console.ReadLine()) with
+                | true, a -> yield a
+                | _ -> eprintfn "Wrong"
         }
 
     let trees = trees inputs
