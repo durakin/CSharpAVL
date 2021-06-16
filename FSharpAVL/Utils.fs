@@ -15,3 +15,6 @@ module Utils =
         if n < 0 then Less
         elif n > 0 then Greater
         else Equal
+
+    let inline unreachable (_: unit) =
+        raise ^ InvalidOperationException("Unreachable")

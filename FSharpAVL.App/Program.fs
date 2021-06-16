@@ -27,7 +27,7 @@ let main _ =
         printfn "----"
 
         tree
-        |> replace'
+        |> dfs
             (fun subTree ->
                 printfn $"   %A{rootItem subTree} -> %i{balanceFactor subTree}"
                 None)

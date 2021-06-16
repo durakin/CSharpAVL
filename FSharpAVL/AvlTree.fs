@@ -14,12 +14,9 @@ let rootItem tree =
 let rec height tree =
     match tree with
     | Nil _ -> 1
-    | Left (_, leftSubtree) -> 1 + height leftSubtree
-    | Right (_, rightSubtree) -> 1 + height rightSubtree
-    | Both (_, leftSubtree, rightSubtree) ->
-        (height leftSubtree, height rightSubtree)
-        ||> max
-        |> (+) 1
+    | Left (_, l) -> 1 + height l
+    | Right (_, r) -> 1 + height r
+    | Both (_, l, r) -> (height l, height r) ||> max |> (+) 1
 
 let leftChild tree =
     match tree with
@@ -56,28 +53,17 @@ let rec rebuild tree =
     | Right (a, r) -> Right(a, rebuild r)
     | Both (a, l, r) -> Both(a, rebuild l, rebuild r)
 
-let replace fn tree =
-    let rec rebuild' tree =
-        match tree with
-        | Nil a -> Nil a
-        | Left (a, l) -> Left(a, fn l |> Option.defaultValue (rebuild' l))
-        | Right (a, r) -> Right(a, fn r |> Option.defaultValue (rebuild' r))
-        | Both (a, l, r) -> Both(a, fn l |> Option.defaultValue (rebuild' l), fn r |> Option.defaultValue (rebuild' r))
+let dfs replacer tree =
+    let rec dfs' tree =
+        replacer tree
+        |> Option.defaultValue
+           ^ match tree with
+             | Nil a -> Nil a
+             | Left (a, l) -> Left(a, dfs' l)
+             | Right (a, r) -> Right(a, dfs' r)
+             | Both (a, l, r) -> Both(a, dfs' l, dfs' r)
 
-    rebuild' tree
-
-let replace' fn tree =
-    let rec rebuild' tree =
-        fn tree
-        |> Option.defaultValue (
-            match tree with
-            | Nil a -> Nil a
-            | Left (a, l) -> Left(a, rebuild' l)
-            | Right (a, r) -> Right(a, rebuild' r)
-            | Both (a, l, r) -> Both(a, rebuild' l, rebuild' r)
-        )
-
-    rebuild' tree
+    dfs' tree
 
 let rotateLeft z x =
     let t1 = leftChild x
@@ -127,45 +113,31 @@ let rotateLeftRight (y, z) x =
 
     newY
 
-let rotateTree fn (x, z) parent =
-    replace
-        (fun subtree ->
-            if subtree = parent then
-                Some ^ fn (x, z) parent
-            else
-                None)
-
-//let rec insertUnbalanced tree newItem =
-//    match tree with
-//    | Nil item ->
-//        match compare newItem item with
-//        | Less -> Left(item, ofItem newItem)
-//        | Equal -> tree
-//        | Greater -> Right(item, ofItem newItem)
-//    | Left (item, l) ->
-//        match compare newItem item with
-//        | Less -> Left(item, insertUnbalanced l newItem)
-//        | Equal -> tree
-//        | Greater -> Both(item, l, ofItem newItem)
-//    | Right (item, r) ->
-//        match compare newItem item with
-//        | Less -> Both(item, ofItem newItem, r)
-//        | Equal -> tree
-//        | Greater -> Right(item, insertUnbalanced r newItem)
-//    | Both (item, l, r) ->
-//        match compare newItem item with
-//        | Less -> Both(item, insertUnbalanced l newItem, r)
-//        | Equal -> tree
-//        | Greater -> Both(item, l, insertUnbalanced r newItem)
-
-type private Violation =
-    | RightRight
-    | LeftLeft
-    | RightLeft
-    | LeftRight
+let rec insertUnbalanced tree newItem =
+    match tree with
+    | Nil item ->
+        match compare newItem item with
+        | Less -> Left(item, ofItem newItem)
+        | Equal -> tree
+        | Greater -> Right(item, ofItem newItem)
+    | Left (item, l) ->
+        match compare newItem item with
+        | Less -> Left(item, insertUnbalanced l newItem)
+        | Equal -> tree
+        | Greater -> Both(item, l, ofItem newItem)
+    | Right (item, r) ->
+        match compare newItem item with
+        | Less -> Both(item, ofItem newItem, r)
+        | Equal -> tree
+        | Greater -> Right(item, insertUnbalanced r newItem)
+    | Both (item, l, r) ->
+        match compare newItem item with
+        | Less -> Both(item, insertUnbalanced l newItem, r)
+        | Equal -> tree
+        | Greater -> Both(item, l, insertUnbalanced r newItem)
 
 let rec insert tree newItem =
-    let newTree =
+    let x =
         match tree with
         | Nil item ->
             match compare newItem item with
@@ -188,25 +160,19 @@ let rec insert tree newItem =
             | Equal -> tree
             | Greater -> Both(item, l, insert r newItem)
 
-    let x = newTree
-
     if abs (balanceFactor x) = 2 then
-        let lZ = leftChild x
-        let rZ = rightChild x
-
-        let newX =
-            match lZ, rZ with
-            | _, Some z when balanceFactor z >= 0 -> rotateLeft z x
-            | Some z, _ when balanceFactor z <= 0 -> rotateRight z x
-            | _, Some z when balanceFactor z < 0 ->
-                let y = leftChild z
-                rotateRightLeft (y.Value, z) x
-            | Some z, _ when balanceFactor z > 0 ->
-                let y = rightChild z
-                rotateLeftRight (y.Value, z) x
-            | _ -> x
-
-        newX
+        match leftChild x, rightChild x with
+        | _, Some z when balanceFactor z >= 0 -> rotateLeft z x
+        | Some z, _ when balanceFactor z <= 0 -> rotateRight z x
+        | _, Some z when balanceFactor z < 0 ->
+            match leftChild z with
+            | Some y -> rotateRightLeft (y, z) x
+            | None -> unreachable ()
+        | Some z, _ when balanceFactor z > 0 ->
+            match rightChild z with
+            | Some y -> rotateLeftRight (y, z) x
+            | None -> unreachable ()
+        | _ -> unreachable ()
     else
         x
 
