@@ -148,9 +148,25 @@ let rec insertUnbalanced tree newItem =
         match compare newItem item with
         | Less -> Both(item, ofItem newItem, r)
         | Equal -> tree
-        | Greater -> Left(item, insertUnbalanced r newItem)
+        | Greater -> Right(item, insertUnbalanced r newItem)
     | Both (item, l, r) ->
         match compare newItem item with
         | Less -> Both(item, insertUnbalanced l newItem, r)
         | Equal -> tree
         | Greater -> Both(item, l, insertUnbalanced r newItem)
+
+let rec toSeq tree =
+    seq {
+        match tree with
+        | Nil item -> yield item
+        | Left (item, l) ->
+            yield! toSeq l
+            yield item
+        | Right (item, r) ->
+            yield item
+            yield! toSeq r
+        | Both (item, l, r) ->
+            yield! toSeq l
+            yield item
+            yield! toSeq r
+    }

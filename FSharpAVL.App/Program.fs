@@ -29,9 +29,11 @@ let main _ =
         tree
         |> replace'
             (fun subTree ->
-                printfn $"  %A{subTree} -> %i{balanceFactor subTree}"
+                printfn $"   %A{subTree} -> %i{balanceFactor subTree}"
                 None)
         |> ignore
+
+        printfn $"  %A{toSeq tree |> Seq.toList}"
 
         printfn $" %A{tree}"
         printfn "----"
