@@ -7,7 +7,7 @@ let trees numbers =
         yield tree
 
         for i in numbers do
-            tree <- insertUnbalanced tree i
+            tree <- insert tree i
             yield tree
     }
 
@@ -16,7 +16,7 @@ let main _ =
     let inputs =
         seq {
             while true do
-                match System.Int32.TryParse(System.Console.ReadLine()) with
+                match System.Double.TryParse(System.Console.ReadLine()) with
                 | true, a -> yield a
                 | _ -> eprintfn "Wrong"
         }
@@ -29,7 +29,7 @@ let main _ =
         tree
         |> replace'
             (fun subTree ->
-                printfn $"   %A{subTree} -> %i{balanceFactor subTree}"
+                printfn $"   %A{rootItem subTree} -> %i{balanceFactor subTree}"
                 None)
         |> ignore
 

@@ -16,7 +16,10 @@ let rec height tree =
     | Nil _ -> 1
     | Left (_, leftSubtree) -> 1 + height leftSubtree
     | Right (_, rightSubtree) -> 1 + height rightSubtree
-    | Both (_, leftSubtree, rightSubtree) -> 1 + height leftSubtree + height rightSubtree
+    | Both (_, leftSubtree, rightSubtree) ->
+        (height leftSubtree, height rightSubtree)
+        ||> max
+        |> (+) 1
 
 let leftChild tree =
     match tree with
@@ -37,7 +40,7 @@ let balanceFactor tree =
     | Nil _ -> 0
     | Left (_, l) -> -(height l)
     | Right (_, r) -> height r
-    | Both (_, l, r) -> height l - height r
+    | Both (_, l, r) -> height r - height l
 
 let ofOptions item (a, b) =
     match a, b with
@@ -132,28 +135,80 @@ let rotateTree fn (x, z) parent =
             else
                 None)
 
-let rec insertUnbalanced tree newItem =
-    match tree with
-    | Nil item ->
-        match compare newItem item with
-        | Less -> Left(item, ofItem newItem)
-        | Equal -> tree
-        | Greater -> Right(item, ofItem newItem)
-    | Left (item, l) ->
-        match compare newItem item with
-        | Less -> Left(item, insertUnbalanced l newItem)
-        | Equal -> tree
-        | Greater -> Both(item, l, ofItem newItem)
-    | Right (item, r) ->
-        match compare newItem item with
-        | Less -> Both(item, ofItem newItem, r)
-        | Equal -> tree
-        | Greater -> Right(item, insertUnbalanced r newItem)
-    | Both (item, l, r) ->
-        match compare newItem item with
-        | Less -> Both(item, insertUnbalanced l newItem, r)
-        | Equal -> tree
-        | Greater -> Both(item, l, insertUnbalanced r newItem)
+//let rec insertUnbalanced tree newItem =
+//    match tree with
+//    | Nil item ->
+//        match compare newItem item with
+//        | Less -> Left(item, ofItem newItem)
+//        | Equal -> tree
+//        | Greater -> Right(item, ofItem newItem)
+//    | Left (item, l) ->
+//        match compare newItem item with
+//        | Less -> Left(item, insertUnbalanced l newItem)
+//        | Equal -> tree
+//        | Greater -> Both(item, l, ofItem newItem)
+//    | Right (item, r) ->
+//        match compare newItem item with
+//        | Less -> Both(item, ofItem newItem, r)
+//        | Equal -> tree
+//        | Greater -> Right(item, insertUnbalanced r newItem)
+//    | Both (item, l, r) ->
+//        match compare newItem item with
+//        | Less -> Both(item, insertUnbalanced l newItem, r)
+//        | Equal -> tree
+//        | Greater -> Both(item, l, insertUnbalanced r newItem)
+
+type private Violation =
+    | RightRight
+    | LeftLeft
+    | RightLeft
+    | LeftRight
+
+let rec insert tree newItem =
+    let newTree =
+        match tree with
+        | Nil item ->
+            match compare newItem item with
+            | Less -> Left(item, ofItem newItem)
+            | Equal -> tree
+            | Greater -> Right(item, ofItem newItem)
+        | Left (item, l) ->
+            match compare newItem item with
+            | Less -> Left(item, insert l newItem)
+            | Equal -> tree
+            | Greater -> Both(item, l, ofItem newItem)
+        | Right (item, r) ->
+            match compare newItem item with
+            | Less -> Both(item, ofItem newItem, r)
+            | Equal -> tree
+            | Greater -> Right(item, insert r newItem)
+        | Both (item, l, r) ->
+            match compare newItem item with
+            | Less -> Both(item, insert l newItem, r)
+            | Equal -> tree
+            | Greater -> Both(item, l, insert r newItem)
+
+    let x = newTree
+
+    if abs (balanceFactor x) = 2 then
+        let lZ = leftChild x
+        let rZ = rightChild x
+
+        let newX =
+            match lZ, rZ with
+            | _, Some z when balanceFactor z >= 0 -> rotateLeft z x
+            | Some z, _ when balanceFactor z <= 0 -> rotateRight z x
+            | _, Some z when balanceFactor z < 0 ->
+                let y = leftChild z
+                rotateRightLeft (y.Value, z) x
+            | Some z, _ when balanceFactor z > 0 ->
+                let y = rightChild z
+                rotateLeftRight (y.Value, z) x
+            | _ -> x
+
+        newX
+    else
+        x
 
 let rec toSeq tree =
     seq {
