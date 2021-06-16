@@ -1,51 +1,146 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CSharpAVL
 {
-    
-    public class BinarySearchTree<T> where T : IComparable
+    public class BinarySearchTree<T> : ICollection<T> where T : IComparable
     {
         private Node<T> _root;
         public int Count { get; private set; }
 
-        #region IEnumerable methods
+        #region IEnumerable implementanion
 
+        IEnumerator<T> IEnumerable<T>.GetEnumerator() {
+            return new BinarySearchTreeEnum(this);
+        }
+ 
+        IEnumerator IEnumerable.GetEnumerator() {
+            return new BinarySearchTreeEnum(this);
+        }
+        
+
+        private class BinarySearchTreeEnum : IEnumerator<T>
+        {
+            private readonly BinarySearchTree<T> _collection;
+            private int _position = -1;
+            private Node<T> _currentNode;
+            private List<Node<T>> _path = new();
+            private readonly List<Node<T>> _visited = new();
+
+            public T Current { get; private set; }
+
+            object IEnumerator.Current => Current;
+
+            public BinarySearchTreeEnum(BinarySearchTree<T> collection)
+            {
+                _collection = collection;
+            }
+
+            /*
+            object IEnumerator.Current
+            {
+                get
+                {
+                    if (_position >= 0 && _position < _collection.Count)
+                    {
+                        return _current;
+                    }
+                    throw new InvalidOperationException();
+                }
+            }
+            */
+
+
+            public bool MoveNext()
+            {
+                _position++;
+
+                if (_position >= _collection.Count)
+                    return false;
+
+                if (_position == 0)
+                {
+                    _currentNode = MinValueNode(_collection._root, out _path);
+                }
+                else
+                {
+                    if (_currentNode.Right != null)
+                    {
+                        _currentNode = MinValueNode(_currentNode.Right, out var relativePath);
+                        _path.AddRange(relativePath);
+                    }
+                    else
+                    {
+                        while (_visited.Contains(_currentNode))
+                        {
+                            _currentNode = _path.Last();
+                            _path.Remove(_currentNode);
+                        }
+                    }
+                }
+                Current = _currentNode.Data;
+                _visited.Add(_currentNode);
+                return true;
+            }
+
+            public void Reset()
+            {
+                _position = -1;
+                _currentNode = _collection._root;
+                _path.Clear();
+                _visited.Clear();
+            }
+
+            public void Dispose()
+            {
+            }
+        }
+        
         
 
         #endregion
-        
+
         #region ICollection<T> methods
-        
-        public void CopyTo(T[] array, int arrayIndex) {
+
+        bool ICollection<T>.IsReadOnly => false;
+
+        public void CopyTo(T[] array, int arrayIndex)
+        {
             CopyTo(array, arrayIndex, Count);
         }
-        
-        public void CopyTo(T[] array) { CopyTo(array, 0, Count); }
-        
-        private void CopyTo(T[] array, int arrayIndex, int count) {
-            throw new NotImplementedException();
-            if (array == null) {
+
+        public void CopyTo(T[] array)
+        {
+            CopyTo(array, 0, Count);
+        }
+
+        private static void CopyTo(T[] array, int arrayIndex, int count)
+        {
+            if (array == null)
+            {
                 throw new ArgumentNullException(nameof(array));
             }
-            
-            // check array index valid index into array
-            if (arrayIndex < 0) {
+
+            if (arrayIndex < 0)
+            {
                 throw new ArgumentOutOfRangeException(nameof(arrayIndex));
             }
- 
-            // also throw if count less than 0
-            if (count < 0) {
+
+            if (count < 0)
+            {
                 throw new ArgumentOutOfRangeException(nameof(count));
             }
- 
+
             // will array, starting at arrayIndex, be able to hold elements? Note: not
             // checking arrayIndex >= array.Length (consistency with list of allowing
             // count of 0; subsequent check takes care of the rest)
-            if (arrayIndex > array.Length || count > array.Length - arrayIndex) {
+            if (arrayIndex > array.Length || count > array.Length - arrayIndex)
+            {
                 throw new ArgumentException("Not enough place in array to copy collection there");
             }
- 
+
             /*
             var numCopied = 0;
             for (var i = 0; i < m_lastIndex && numCopied < count; i++) {
@@ -56,7 +151,7 @@ namespace CSharpAVL
             }
             */
         }
-        
+
         public bool Remove(T data)
         {
             _root = DeleteNode(_root, data, out var result);
@@ -84,7 +179,7 @@ namespace CSharpAVL
         #endregion
 
         #region Traverse methods
-        
+
         public enum TraverseOrder
         {
             Infix,
@@ -135,7 +230,7 @@ namespace CSharpAVL
         }
 
         #endregion
-        
+
         private static int Height(Node<T> node)
         {
             return node?.Height ?? 0;
@@ -173,13 +268,10 @@ namespace CSharpAVL
         {
             return node != null ? Height(node.Left) - Height(node.Right) : 0;
         }
-
-
-        public bool Add(T item)
+        
+        public void Add(T item)
         {
-            if (item == null) return false;
-            _root = AddIfNotPresent(_root, item, out var addResult);
-            return addResult;
+            _root = AddIfNotPresent(_root, item, out _);
         }
 
 
@@ -228,16 +320,18 @@ namespace CSharpAVL
             }
         }
 
-        private static Node<T> MinValueNode(Node<T> node)
+        private static Node<T> MinValueNode(Node<T> node, out List<Node<T>> path)
         {
             var current = node;
-
+            path = new List<Node<T>>();
             while (current.Left != null)
+            {
+                path.Add(current);
                 current = current.Left;
-
+            }
             return current;
         }
-        
+
         private T FindValue(Node<T> node, object value, out bool found)
         {
             found = false;
@@ -285,7 +379,7 @@ namespace CSharpAVL
                     }
                     else
                     {
-                        var temp = MinValueNode(root.Right);
+                        var temp = MinValueNode(root.Right, out _);
                         root.Data = temp.Data;
                         root.Right = DeleteNode(root.Right, temp.Data, out deleted);
                     }
@@ -318,9 +412,6 @@ namespace CSharpAVL
                     return root;
             }
         }
-
-
-        
 
 
         public void PrintTree()
