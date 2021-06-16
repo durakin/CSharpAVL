@@ -7,7 +7,7 @@ namespace CSharpAVL
 {
     public class BinarySearchTree<T> : ICollection<T> where T : IComparable
     {
-        private Node<T> _root;
+        private Node<T>? _root;
         public int Count { get; private set; }
 
         #region IEnumerable implementanion
@@ -19,17 +19,15 @@ namespace CSharpAVL
         IEnumerator IEnumerable.GetEnumerator() {
             return new BinarySearchTreeEnum(this);
         }
-        
 
         private class BinarySearchTreeEnum : IEnumerator<T>
         {
             private readonly BinarySearchTree<T> _collection;
             private int _position = -1;
-            private Node<T> _currentNode;
+            private Node<T>? _currentNode;
             private List<Node<T>> _path = new();
             private readonly List<Node<T>> _visited = new();
-
-            public T Current { get; private set; }
+            private T? _current;
 
             object IEnumerator.Current => Current;
 
@@ -37,21 +35,20 @@ namespace CSharpAVL
             {
                 _collection = collection;
             }
-
-            /*
-            object IEnumerator.Current
+            
+            public T Current
             {
                 get
                 {
-                    if (_position >= 0 && _position < _collection.Count)
+                    if (_current != null)
                     {
                         return _current;
                     }
                     throw new InvalidOperationException();
                 }
+                private set => _current = value;
             }
-            */
-
+            
 
             public bool MoveNext()
             {
@@ -99,7 +96,6 @@ namespace CSharpAVL
         }
         
         
-
         #endregion
 
         #region ICollection<T> methods
@@ -132,24 +128,11 @@ namespace CSharpAVL
             {
                 throw new ArgumentOutOfRangeException(nameof(count));
             }
-
-            // will array, starting at arrayIndex, be able to hold elements? Note: not
-            // checking arrayIndex >= array.Length (consistency with list of allowing
-            // count of 0; subsequent check takes care of the rest)
+            
             if (arrayIndex > array.Length || count > array.Length - arrayIndex)
             {
                 throw new ArgumentException("Not enough place in array to copy collection there");
             }
-
-            /*
-            var numCopied = 0;
-            for (var i = 0; i < m_lastIndex && numCopied < count; i++) {
-                if (m_slots[i].hashCode >= 0) {
-                    array[arrayIndex + numCopied] = m_slots[i].value;
-                    numCopied++;
-                }
-            }
-            */
         }
 
         public bool Remove(T data)
@@ -163,12 +146,6 @@ namespace CSharpAVL
             FindValue(_root, item, out var result);
             return result;
         }
-
-        // void ICollection<T>.Add(T item)
-        // {
-        //     if (item == null) return;
-        //     _root = AddIfNotPresent(_root, item, out _);
-        // }
 
         public void Clear()
         {
@@ -205,7 +182,7 @@ namespace CSharpAVL
             }
         }
 
-        private static void InfixTraverse(Node<T> node, Action<T> action)
+        private static void InfixTraverse(Node<T>? node, Action<T> action)
         {
             if (node == null) return;
             if (node.Left != null) InfixTraverse(node.Left, action);
@@ -213,7 +190,7 @@ namespace CSharpAVL
             if (node.Right != null) InfixTraverse(node.Right, action);
         }
 
-        private static void PrefixTraverse(Node<T> node, Action<T> action)
+        private static void PrefixTraverse(Node<T>? node, Action<T> action)
         {
             if (node == null) return;
             action(node.Data);
@@ -221,7 +198,7 @@ namespace CSharpAVL
             if (node.Right != null) PrefixTraverse(node.Right, action);
         }
 
-        private static void PostfixTraverse(Node<T> node, Action<T> action)
+        private static void PostfixTraverse(Node<T>? node, Action<T> action)
         {
             if (node == null) return;
             if (node.Left != null) PostfixTraverse(node.Left, action);
@@ -231,7 +208,7 @@ namespace CSharpAVL
 
         #endregion
 
-        private static int Height(Node<T> node)
+        private static int Height(Node<T>? node)
         {
             return node?.Height ?? 0;
         }
@@ -264,7 +241,7 @@ namespace CSharpAVL
             return y;
         }
 
-        private static int GetBalance(Node<T> node)
+        private static int GetBalance(Node<T>? node)
         {
             return node != null ? Height(node.Left) - Height(node.Right) : 0;
         }
@@ -275,7 +252,7 @@ namespace CSharpAVL
         }
 
 
-        private Node<T> AddIfNotPresent(Node<T> node, T data, out bool added)
+        private Node<T> AddIfNotPresent(Node<T>? node, T data, out bool added)
         {
             added = false;
 
@@ -302,7 +279,7 @@ namespace CSharpAVL
                 Height(node.Right));
 
             var balance = GetBalance(node);
-
+            
             switch (balance)
             {
                 case > 1 when data.CompareTo(node.Left.Data) < 0:
@@ -320,10 +297,12 @@ namespace CSharpAVL
             }
         }
 
-        private static Node<T> MinValueNode(Node<T> node, out List<Node<T>> path)
+        private static Node<T>? MinValueNode(Node<T>? node, out List<Node<T>> path)
         {
-            var current = node;
             path = new List<Node<T>>();
+            if (node == null) return null;
+            
+            var current = node;
             while (current.Left != null)
             {
                 path.Add(current);
@@ -332,10 +311,10 @@ namespace CSharpAVL
             return current;
         }
 
-        private T FindValue(Node<T> node, object value, out bool found)
+        private T? FindValue(Node<T>? node, object value, out bool found)
         {
             found = false;
-            if (node == null || value == null)
+            if (node == null)
             {
                 return default;
             }
@@ -350,13 +329,10 @@ namespace CSharpAVL
             }
         }
 
-        private Node<T> DeleteNode(Node<T> root, T data, out bool deleted)
+        private Node<T>? DeleteNode(Node<T>? root, T data, out bool deleted)
         {
             deleted = false;
-
-            if (data == null)
-                return null;
-
+            
             if (root == null)
                 return null;
 
@@ -418,22 +394,5 @@ namespace CSharpAVL
         {
             TreeDrawer<T>.PrintNode(_root, "");
         }
-
-        /*
-         public bool RemoveByValue(object value)
-        {
-            if (!FindValue(_root, value, out var data)) return false;
-            Remove(data);
-            return true;
-        }
-        */
-        /*
-        public bool FindValue(object value, out T found)
-        {
-            if (FindValue(_root, value, out found)) return true;
-            found = default;
-            return false;
-        }
-        */
     }
 }
