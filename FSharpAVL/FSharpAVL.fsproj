@@ -12,4 +12,8 @@
         <Compile Include="AvlTree.fs" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="System.Collections.Immutable" Version="1.2.0" />
+    </ItemGroup>
+
 </Project>

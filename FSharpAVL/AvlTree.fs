@@ -191,3 +191,53 @@ let rec toSeq tree =
             yield item
             yield! toSeq r
     }
+
+let rec count tree =
+    match tree with
+    | Nil _ -> 1
+    | Left (_, l) -> 1 + count l
+    | Right (_, r) -> 1 + count r
+    | Both (_, l, r) -> 1 + count l + count r
+
+open System.Collections.Immutable
+open System.Collections.Generic
+open System.Collections
+
+let rec toImmutableSet tree =
+    { new IImmutableSet<_> with
+        member this.Count = count tree
+
+        member this.Add(a) = insert tree a |> toImmutableSet
+
+        member this.Clear() = unimplemented ""
+
+        member this.Contains(a) = unimplemented ""
+
+        member this.Except(a) = unimplemented ""
+
+        member this.GetEnumerator() : IEnumerator<_> = (toSeq tree).GetEnumerator()
+
+        member this.GetEnumerator() : IEnumerator =
+            (toSeq tree :> IEnumerable).GetEnumerator()
+
+        member this.Intersect(a) = unimplemented ""
+
+        member this.IsProperSubsetOf(a) = unimplemented ""
+
+        member this.IsProperSupersetOf(a) = unimplemented ""
+
+        member this.IsSubsetOf(a) = unimplemented ""
+
+        member this.IsSupersetOf(a) = unimplemented ""
+
+        member this.Overlaps(a) = unimplemented ""
+
+        member this.Remove(a) = unimplemented ""
+
+        member this.SetEquals(a) = unimplemented ""
+
+        member this.SymmetricExcept(a) = unimplemented ""
+
+        member this.TryGetValue(a, b) = unimplemented ""
+
+        member this.Union(a) = unimplemented "" }

@@ -1,13 +1,13 @@
-﻿open FSharpAVL.AvlTree
+﻿open FSharpAVL
 
 let trees numbers =
-    let mutable tree = ofItem (numbers |> Seq.head)
+    let mutable tree = AvlTree.ofItem (numbers |> Seq.head)
 
     seq {
         yield tree
 
         for i in numbers do
-            tree <- insert tree i
+            tree <- AvlTree.insert tree i
             yield tree
     }
 
@@ -24,17 +24,18 @@ let main _ =
     let trees = trees inputs
 
     for tree in trees do
-        printfn "----"
+        printfn "-----"
 
         tree
-        |> dfs
+        |> AvlTree.dfs
             (fun subTree ->
-                printfn $"   %A{rootItem subTree} -> %i{balanceFactor subTree}"
+                printfn $"   %A{AvlTree.rootItem subTree} -> %i{AvlTree.balanceFactor subTree}"
                 None)
         |> ignore
 
-        printfn $"  %A{toSeq tree |> Seq.toList}"
+        printfn $"  %A{AvlTree.toSeq tree |> Seq.toList}"
 
+        let _set = AvlTree.toImmutableSet tree
         printfn $" %A{tree}"
         printfn "----"
 
